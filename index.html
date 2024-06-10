@@ -83,5 +83,14 @@
             <button type="submit">Login</button>
         </form>
     </div>
+
+        <script async>
+          const user = localStorage.getItem("user");
+let userData = user ? JSON.parse(user) : null;
+if(userData) {
+        document.getElementById('account_balance').innerHTML = `<p>$${userData.balance.toLocaleString()}</p>`;
+        document.getElementById('account_name').innerHTML = `<p>${userData.fullname}</p>`;
+}
+    </script>
 </body>
 </html>
