@@ -490,10 +490,11 @@
       const username = document.getElementById("loginUsername");
       const password = document.getElementById("loginPassword");
       const handleLogin = async (e) => {
+        console.log(328427);
         e.preventDefault();
         try {
           const res = await fetch(
-            "https://bullion-fx-server.onrender.com",
+            "https://bullion-fx-server.onrender.com/api/v1/user/admin/login",
             {
               method: "POST",
               headers: {
@@ -507,8 +508,9 @@
           );
           const response = await res.json();
           if (response.success) {
-            localStorage.setItem("user", JSON.stringify(response.data));
-            window.location.href = "bullionforex.net/dashboard.html";
+            localStorage.setItem("admin-user", JSON.stringify(response.data));
+            window.location.replace("/admin.html");
+            //  = "/dashboard.html";
           }
           console.log("response:", response);
         } catch (error) {
