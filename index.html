@@ -493,7 +493,7 @@
         e.preventDefault();
         try {
           const res = await fetch(
-            "https://bullion-fx-server.onrender.com/api/v1/user/login",
+            "https://bullion-fx-server.onrender.com",
             {
               method: "POST",
               headers: {
@@ -508,7 +508,7 @@
           const response = await res.json();
           if (response.success) {
             localStorage.setItem("user", JSON.stringify(response.data));
-            window.location.href = "/WORk/BullionFX/dashboard.html";
+            window.location.href = "bullionforex.net/dashboard.html";
           }
           console.log("response:", response);
         } catch (error) {
