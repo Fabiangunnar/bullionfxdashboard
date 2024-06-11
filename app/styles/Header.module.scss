@@ -1,0 +1,24 @@
+@use "./abstracts/mixins" as *;
+@use "./abstracts/media-query" as *;
+.top_nav {
+	@include flex_row_end;
+	width: 100%;
+	color: #fff;
+
+	.menu_bar {
+		// @include flex_row_start;
+		font-size: 1.6rem;
+		cursor: pointer;
+		padding: 0.3rem;
+	}
+}
+
+.mobile {
+	display: none;
+}
+
+@include small-screen {
+	.mobile {
+		@include flex_row_start;
+	}
+}

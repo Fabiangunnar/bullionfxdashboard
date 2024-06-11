@@ -1,0 +1,26 @@
+@use "../abstracts/mixins" as *;
+@use "../abstracts/media-query" as *;
+
+.logout {
+	@include flex_row_center;
+	height: 100%;
+
+	.logout_card {
+		border: 1px solid #d6d6d6;
+		border-radius: 1rem;
+		padding: 2rem;
+		@include flex_col_center;
+		gap: 1rem;
+		overflow: hidden;
+		h2 {
+			font-size: 1.4rem;
+		}
+
+		.line_through {
+			width: 140%;
+			height: 1px;
+			background: #bebebe;
+			margin-bottom: 2rem;
+		}
+	}
+}

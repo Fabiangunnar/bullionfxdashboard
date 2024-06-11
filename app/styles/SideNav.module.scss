@@ -1,0 +1,57 @@
+@use "./abstracts/mixins" as *;
+@use "./abstracts/media-query" as *;
+
+.sidenav_items {
+  width: 100%;
+
+  h5 {
+    font-weight: 700;
+    color: #b1b1b1;
+  }
+
+  .nav_links {
+    @include flex_col_start;
+    gap: 4px;
+    .nav_link {
+      padding: 0.8rem 1rem;
+      cursor: pointer;
+      font-size: 0.8rem;
+      border-radius: 4px;
+      @include flex_row_start;
+      gap: 4px;
+      width: 100%;
+      &:hover {
+        background: #0041a1;
+      }
+      > span {
+        @include flex_row_start;
+        white-space: nowrap;
+      }
+    }
+    .active {
+      background: #0041a1;
+    }
+  }
+}
+.sidenav_block {
+  @include flex_col_center;
+  gap: 4rem;
+  width: 100%;
+  h1 {
+    font-size: 1.4rem;
+  }
+}
+@include small-screen {
+  .nav_link {
+    padding: 0.6rem 0.8rem;
+    font-size: 0.8rem;
+  }
+  .sidenav_block {
+    gap: 2rem;
+  }
+}
+@include medium-screen {
+  .nav_link {
+    font-size: 0.8rem;
+  }
+}
