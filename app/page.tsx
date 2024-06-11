@@ -54,10 +54,10 @@ export default function Home() {
   return (
     <>
       <Head>
-        <title>BITTFX TRADE ADMIN</title>
+        <title>BULLIONFX ADMIN</title>
         <meta
           name="description"
-          content="Explore the powerful bittfxtrade trading platform for seamless FX trade."
+          content="Explore the powerful bullionfx trading platform for seamless FX trade."
         />{" "}
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
