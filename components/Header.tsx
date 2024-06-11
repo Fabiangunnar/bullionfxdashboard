@@ -8,16 +8,13 @@ import {
   useDisclosure,
 } from "@chakra-ui/react";
 import SpinnerPage from "./Spinner";
-import ModalPage from "./ModalPage";
 import { AiOutlineRollback } from "react-icons/ai";
 import { setOpenNav, setPrevPage } from "@/redux/features/NavSlice";
 import { useAppSelector, useAppDispatch } from "@/redux/hooks";
 type Props = {};
 
 const Header = (props: Props) => {
-  const {  errorMessage } = useAppSelector(
-    (state) => state.AppSlice
-  );
+  const { errorMessage } = useAppSelector((state) => state.AppSlice);
   const { prevPage } = useAppSelector((state) => state.nav);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { toast } = createStandaloneToast();
@@ -28,16 +25,11 @@ const Header = (props: Props) => {
     dispatch(setOpenNav());
   };
 
-
-
   return (
     <>
       {isLoading && <SpinnerPage />}
-      <ModalPage isOpen={isOpen} onClose={onClose} />
       <div className={`${styles.top_nav}`}>
-        <Flex w={"100%"} justify={"center"}>
-
-        </Flex>
+        <Flex w={"100%"} justify={"center"}></Flex>
         <span
           className={`${styles.menu_bar} ${styles.mobile}`}
           onClick={handleOpenNav}

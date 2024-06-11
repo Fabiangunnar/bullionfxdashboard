@@ -8,7 +8,6 @@ import { useRouter } from "next/navigation";
 import { useAppSelector, useAppDispatch } from "@/redux/hooks";
 import { UserTypes, setUserManageData } from "@/redux/features/AppSlice";
 import { setCurrentPage } from "@/redux/features/NavSlice";
-import { DeleteUserModal } from "@/components/ModalPage";
 import Pagination from "@/components/Pagination";
 import {
   useDisclosure,
@@ -165,7 +164,6 @@ export default function Home() {
             />
           </Flex>
         </div>
-        {/* <DeleteUserModal userId={deleteId} isOpen={isOpen} onClose={onClose} /> */}
       </section>
     </>
   );
