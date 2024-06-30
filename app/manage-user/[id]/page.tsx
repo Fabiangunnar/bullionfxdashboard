@@ -43,6 +43,11 @@ import {
   resetSendState,
   resetUpdateDepositState,
   updateUser,
+  updateUserCurrencyBalance,
+  TransactionType,
+  getTransactions,
+  resetTransactionState,
+  deleteTransaction,
 } from "@/redux/features/AppSlice";
 import { useAppSelector, useAppDispatch } from "@/redux/hooks";
 import { useParams } from "next/navigation";
@@ -50,9 +55,17 @@ import { useParams } from "next/navigation";
 type Props = {};
 
 const ManageUser = (props: Props) => {
+  const currencies = ["btc", "eth", "usdt", "xrp"];
   const params = useParams();
-  const { userManageData, sendState, updateState, errorMessage } =
-    useAppSelector((state) => state.AppSlice);
+
+  const {
+    userManageData,
+    transactions,
+    transactionState,
+    updateState,
+    errorMessage,
+  } = useAppSelector((state) => state.AppSlice);
+
   const stateBoxRef: any = useRef();
   const [accountBox, setAccountBox] = useState(false);
   const [formData, setFormData] = useState({
@@ -63,17 +76,20 @@ const ManageUser = (props: Props) => {
   const [balanceFormData, setBalanceFormData] = useState({
     balance: 0,
   });
-
-  const [depositFormData, setDepositFormData] = useState({
-    amount: 0,
+  const [currencyBalanceFormData, setCurrencyBalanceFormData] = useState({
+    balance: 0,
   });
-  const [postsPerPage, sePostsPerPage] = useState(4);
+  const [postsPerPage, setPostsPerPage] = useState(5);
+  const [currentPage, setCurrentPage] = useState(1);
+  const indexOfLastPost = currentPage * postsPerPage;
+  const indexofFirstPost = indexOfLastPost - postsPerPage;
+  const currentTransactions = transactions.slice(
+    indexofFirstPost,
+    indexOfLastPost
+  );
 
-  const [transactionState, setTransactionState] = useState("PENDING");
+  const [currencyState, setCurrencyState] = useState("");
 
-  const [notifFormData, setNotifFormData] = useState({
-    message: "",
-  });
   const { toast } = createStandaloneToast();
   const dispatch = useAppDispatch();
   const date = new Date(`${userManageData.createdAt}`);
@@ -100,10 +116,15 @@ const ManageUser = (props: Props) => {
       [e.target.name]: e.target.value,
     }));
   };
-  const handleTransactionStateChange = (e: any) => {
+  const handleInputChange2 = (e: any) => {
+    setCurrencyBalanceFormData((prev: any) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
+  };
+  const handleCurrencyStateChange = (e: any) => {
     if (e.target.value === "") return;
-    console.log(132, e.target.value);
-    setTransactionState(e.target.value);
+    setCurrencyState(e.target.value);
   };
 
   const handleClickOutside = (event: any) => {
@@ -111,13 +132,12 @@ const ManageUser = (props: Props) => {
       setAccountBox(false);
     }
   };
-  const [currentPage, setCurrentPage] = useState(1);
-  const indexOfLastPost = currentPage * postsPerPage;
-  const indexofFirstPost = indexOfLastPost - postsPerPage;
 
   useEffect(() => {
     dispatch(getUser(params.id));
+    dispatch(getTransactions(params.id));
   }, []);
+
   useEffect(() => {
     document.addEventListener("click", handleClickOutside);
 
@@ -138,6 +158,7 @@ const ManageUser = (props: Props) => {
       });
       setisLoading2(false);
       dispatch(getUser(params.id));
+      dispatch(getTransactions(params.id));
     }
     if (updateState.isError) {
       toast({
@@ -156,12 +177,45 @@ const ManageUser = (props: Props) => {
     }
 
     dispatch(resetUsersState());
+  }, [updateState.isSuccess, updateState.isError, updateState.isLoading]);
+
+  useEffect(() => {
+    if (transactionState.isSuccess) {
+      toast({
+        title: "Success",
+        description: "Transaction updated successfully",
+        status: "success",
+        duration: 2000,
+        isClosable: true,
+        position: "top-right",
+      });
+      setisLoading2(false);
+      dispatch(getUser(params.id));
+      dispatch(getTransactions(params.id));
+    }
+    if (transactionState.isError) {
+      toast({
+        title: errorMessage?.statusCode,
+        description: errorMessage?.message,
+        status: "error",
+        duration: 2000,
+        isClosable: true,
+        position: "top-right",
+      });
+      setisLoading2(false);
+    }
+
+    if (transactionState.isLoading) {
+      setisLoading2(true);
+    }
+
+    // dispatch(resetTransactionState());
   }, [
-    updateState.isSuccess,
-    updateState.isError,
-    updateState.isLoading,
-    dispatch,
+    transactionState.isLoading,
+    transactionState.isError,
+    transactionState.isLoading,
   ]);
+
   const [btcEq, setBtcEq] = useState(0);
   useEffect(() => {
     convertDollarToBTC(Number(userManageData?.balance));
@@ -183,9 +237,40 @@ const ManageUser = (props: Props) => {
     }
   }
 
+  const handleUpdateCurrencyBalance = async (e: any) => {
+    e.preventDefault();
+    if (!currencyState)
+      return toast({
+        title: "Currency not passed",
+        description: 400,
+        status: "error",
+        duration: 2000,
+        isClosable: true,
+        position: "top-right",
+      });
+    if (!currencyBalanceFormData)
+      return toast({
+        title: "Add value to amount input",
+        description: 400,
+        status: "error",
+        duration: 2000,
+        isClosable: true,
+        position: "top-right",
+      });
+    await dispatch(
+      updateUserCurrencyBalance([
+        params.id,
+        currencyState,
+        currencyBalanceFormData,
+      ])
+    );
+    return;
+  };
+
   const handleUpdateBalance = async (e: any) => {
     e.preventDefault();
     await dispatch(updateUser([params.id, balanceFormData]));
+    return;
   };
 
   return (
@@ -218,6 +303,18 @@ const ManageUser = (props: Props) => {
 
             <Stack spacing={3} w={"100%"}>
               <Text fontSize="sm">
+                BTC Balance: ${userManageData.btc_balance}
+              </Text>
+              <Text fontSize="sm">
+                ETH Balance: ${userManageData.eth_balance}
+              </Text>
+              <Text fontSize="sm">
+                USDT Balance: ${userManageData.usdt_balance}
+              </Text>
+              <Text fontSize="sm">
+                XRP Balance: ${userManageData.xrp_balance}
+              </Text>
+              <Text fontSize="sm">
                 Available Balance: ${userManageData.balance}
               </Text>
               <Text fontSize="sm">BTC Equivalent: {btcEq} BTC</Text>
@@ -239,7 +336,61 @@ const ManageUser = (props: Props) => {
             <MdAccountBalance />
             <p>
               Update {`${userManageData.fullname}`}
-              's Balance
+              's Currency Balance
+            </p>
+          </div>
+          <Box p={2}>
+            <form action="" onSubmit={handleUpdateCurrencyBalance}>
+              <FormControl p={2}>
+                <FormLabel fontSize={11}>Currency</FormLabel>
+                <Select
+                  cursor={"pointer"}
+                  fontSize={11}
+                  onClick={handleCurrencyStateChange}
+                  px={0}
+                  placeholder={"select currency"}
+                  size="sm"
+                >
+                  {currencies.map((currency) => (
+                    <option key={currency} value={currency}>
+                      {currency.toUpperCase()}
+                    </option>
+                  ))}
+                </Select>
+              </FormControl>
+
+              <FormControl p={2}>
+                <FormLabel fontSize={11}>currency Balance</FormLabel>
+                <Input
+                  type="text"
+                  fontSize={12}
+                  name="balance"
+                  value={currencyBalanceFormData.balance}
+                  onChange={handleInputChange2}
+                />
+              </FormControl>
+
+              <FormControl p={2}>
+                <Button
+                  fontSize={14}
+                  type="submit"
+                  w="100%"
+                  colorScheme="messenger"
+                >
+                  Update
+                </Button>
+              </FormControl>
+            </form>
+          </Box>
+        </div>
+      </section>
+      <section className={`${styles.user_block}`}>
+        <div className={`${styles.management_block}`}>
+          <div className={`${styles.management_head}`}>
+            <MdAccountBalance />
+            <p>
+              Update {`${userManageData.fullname}`}
+              's Total Balance
             </p>
           </div>
           <Box p={2}>
@@ -300,6 +451,116 @@ const ManageUser = (props: Props) => {
               </Button>
             </Box>
             <Divider colorScheme={"red"} variant={"solid"} />
+          </Flex>
+        </div>
+      </section>
+      <section className={`${styles.user_block}`}>
+        <div className={`${styles.management_block}`}>
+          <div className={`${styles.management_head}`}>
+            <RiLuggageDepositFill />
+            <p>Transactions</p>
+          </div>
+          <TableContainer gap={1}>
+            <Table variant="simple">
+              <Thead>
+                <Tr>
+                  {/* <Th fontSize={11}>S/N</Th> */}
+                  <Th fontSize={11}>Amount</Th>
+                  <Th fontSize={11}>Currency</Th>
+                  <Th fontSize={11}>Username</Th>
+                  <Th fontSize={11}>Time</Th>
+
+                  <Th fontSize={11} isNumeric>
+                    Action
+                  </Th>
+                </Tr>
+              </Thead>
+              <Tbody>
+                {[...currentTransactions].map(
+                  (transaction: TransactionType, index) => {
+                    const date = new Date(`${transaction.createdAt}`);
+                    const options: any = {
+                      month: "long",
+                      day: "numeric",
+                      hour: "numeric",
+                      minute: "numeric",
+                      second: "numeric",
+                    };
+
+                    const formattedDate = `${date.toLocaleDateString(
+                      "en-US",
+                      options
+                    )}`;
+                    return (
+                      <Tr key={transaction.id}>
+                        {/* <Td fontSize={11}>{index + 1}</Td> */}
+                        <Td fontSize={11}>${transaction.amount}</Td>
+
+                        <Td fontSize={11}>{transaction.currency}</Td>
+                        <Td fontSize={11}>{transaction.user.username}</Td>
+
+                        <Td fontSize={11}>{formattedDate}</Td>
+                        <Td fontSize={11}>
+                          {" "}
+                          <Flex
+                            direction={"row"}
+                            gap={1}
+                            justify={"end"}
+                            align={"center"}
+                            minW={"6rem"}
+                          >
+                            <Button
+                              fontSize={11}
+                              maxW={24}
+                              size={"sm"}
+                              w="100%"
+                              type="button"
+                              onClick={() =>
+                                dispatch(deleteTransaction(transaction.id))
+                              }
+                              colorScheme="red"
+                            >
+                              Delete
+                            </Button>
+                          </Flex>
+                        </Td>
+                      </Tr>
+                    );
+                  }
+                )}
+              </Tbody>
+              <Tfoot>
+                <Tr>
+                  {/* <Th fontSize={11} isNumeric>
+                    S/N
+                  </Th> */}
+                  <Th fontSize={11}>Amount</Th>
+                  <Th fontSize={11}>Currency</Th>
+                  <Th fontSize={11}>Username</Th>
+                  <Th fontSize={11}>Time</Th>
+
+                  <Th fontSize={11} isNumeric>
+                    Action
+                  </Th>
+                </Tr>
+              </Tfoot>
+            </Table>
+          </TableContainer>
+          <Table>
+            <TableCaption>
+              {" "}
+              Showing {indexofFirstPost + 1} to{" "}
+              {indexofFirstPost + currentTransactions.length} of{" "}
+              {transactions.length} entries{" "}
+            </TableCaption>
+          </Table>
+          <Flex p={4}>
+            <Pagination
+              postsPerPage={postsPerPage}
+              totalPosts={transactions.length}
+              currentPage={currentPage}
+              setCurrentPage={setCurrentPage}
+            />
           </Flex>
         </div>
       </section>

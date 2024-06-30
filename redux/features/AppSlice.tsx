@@ -4,6 +4,9 @@ import {
   GetUserApi,
   UpdateUserApi,
   GetAllUsersApi,
+  UpdateUserCurrencyApi,
+  GetTransactionsApi,
+  DeleteTransactionApi,
 } from "../services/appServices";
 
 export interface AdminType {
@@ -18,7 +21,23 @@ export interface UserTypes {
   email: string;
   password: string;
   balance: number;
+  btc_balance: number;
+  eth_balance: number;
+  usdt_balance: number;
+  xrp_balance: number;
   createdAt?: string;
+}
+export interface TransactionType {
+  id: string;
+  currency: string;
+  amount: number;
+  userId: string;
+  createdAt: string;
+  user: {
+    username: string;
+    fullname: string;
+    email: string;
+  };
 }
 
 let adminInfo: AdminType = {
@@ -37,113 +56,58 @@ const userManageData: UserTypes = {
   password: "",
   balance: 0,
   createdAt: "",
+  btc_balance: 0,
+  eth_balance: 0,
+  usdt_balance: 0,
+  xrp_balance: 0,
 };
-
+interface QueryState {
+  isLoading: boolean;
+  isError: boolean;
+  isSuccess: boolean;
+}
+const queryState: QueryState = {
+  isLoading: false,
+  isError: false,
+  isSuccess: false,
+};
 interface initialTypes {
   adminInfo: AdminType | null;
-  userState: {
-    isLoading: boolean;
-    isError: boolean;
-    isSuccess: boolean;
-  };
-  usersState: {
-    isLoading: boolean;
-    isError: boolean;
-    isSuccess: boolean;
-  };
-
-  getState: {
-    isLoading: boolean;
-    isError: boolean;
-    isSuccess: boolean;
-  };
-
-  sendState: {
-    isLoading: boolean;
-    isError: boolean;
-    isSuccess: boolean;
-  };
-  updateState: {
-    isLoading: boolean;
-    isError: boolean;
-    isSuccess: boolean;
-  };
-  updateDepositState: {
-    isLoading: boolean;
-    isError: boolean;
-    isSuccess: boolean;
-  };
-  adminState: {
-    isLoading: boolean;
-    isError: boolean;
-    isSuccess: boolean;
-  };
-  adminState2: {
-    isLoading: boolean;
-    isError: boolean;
-    isSuccess: boolean;
-  };
-  adminState3: {
-    isLoading: boolean;
-    isError: boolean;
-    isSuccess: boolean;
-  };
+  userState: QueryState;
+  usersState: QueryState;
+  getTransactionState: QueryState;
+  transactionState: QueryState;
+  getState: QueryState;
+  sendState: QueryState;
+  updateState: QueryState;
+  updateDepositState: QueryState;
+  adminState: QueryState;
+  adminState2: QueryState;
+  adminState3: QueryState;
   errorMessage: {
     statusCode: number;
     message: string;
   };
   users: UserTypes[];
+  transactions: TransactionType[];
   userManageData: UserTypes;
 }
 const initialState: initialTypes = {
   adminInfo,
   users,
+  transactions: [],
   userManageData,
-  userState: {
-    isLoading: false,
-    isError: false,
-    isSuccess: false,
-  },
-  usersState: {
-    isLoading: false,
-    isError: false,
-    isSuccess: false,
-  },
-  getState: {
-    isLoading: false,
-    isError: false,
-    isSuccess: false,
-  },
-  sendState: {
-    isLoading: false,
-    isError: false,
-    isSuccess: false,
-  },
-  updateState: {
-    isLoading: false,
-    isError: false,
-    isSuccess: false,
-  },
-  updateDepositState: {
-    isLoading: false,
-    isError: false,
-    isSuccess: false,
-  },
-  adminState: {
-    isLoading: false,
-    isError: false,
-    isSuccess: false,
-  },
-  adminState2: {
-    isLoading: false,
-    isError: false,
-    isSuccess: false,
-  },
-  adminState3: {
-    isLoading: false,
-    isError: false,
-    isSuccess: false,
-  },
+  userState: queryState,
+  usersState: queryState,
+  getState: queryState,
+  sendState: queryState,
+  updateState: queryState,
+  updateDepositState: queryState,
+  adminState: queryState,
+  adminState2: queryState,
+  adminState3: queryState,
+  getTransactionState: queryState,
+  transactionState: queryState,
   errorMessage: {
     statusCode: 0,
     message: "",
@@ -172,6 +136,17 @@ export const login: any = createAsyncThunk(
   }
 );
 
+export const updateUserCurrencyBalance: any = createAsyncThunk(
+  "update/user/currency/balance",
+  async ([id, currencyid, accountInfo]: any, thunkApi) => {
+    try {
+      return await UpdateUserCurrencyApi(id, currencyid, accountInfo);
+    } catch (error: any) {
+      return thunkApi.rejectWithValue(error.response.data);
+    }
+  }
+);
+
 export const updateUser: any = createAsyncThunk(
   "update/user",
   async ([id, accountInfo]: any, thunkApi) => {
@@ -182,6 +157,7 @@ export const updateUser: any = createAsyncThunk(
     }
   }
 );
+
 export const getUser: any = createAsyncThunk(
   "get/myuser",
   async (id, thunkApi) => {
@@ -217,6 +193,28 @@ export const getAllUsers: any = createAsyncThunk(
   }
 );
 
+export const getTransactions: any = createAsyncThunk(
+  "get/transactions",
+  async (id: string, thunkApi) => {
+    try {
+      return await GetTransactionsApi(id);
+    } catch (error: any) {
+      return thunkApi.rejectWithValue(error.response.data);
+    }
+  }
+);
+
+export const deleteTransaction: any = createAsyncThunk(
+  "delete/transactions",
+  async (id: string, thunkApi) => {
+    try {
+      return await DeleteTransactionApi(id);
+    } catch (error: any) {
+      return thunkApi.rejectWithValue(error.response.data);
+    }
+  }
+);
+
 export const AppSlice = createSlice({
   name: "app-slice",
   initialState,
@@ -234,6 +232,9 @@ export const AppSlice = createSlice({
         isError: false,
         isSuccess: false,
       };
+    },
+    resetTransactionState: (state) => {
+      state.transactionState = queryState;
     },
     resetSendState: (state) => {
       state.sendState = {
@@ -347,6 +348,58 @@ export const AppSlice = createSlice({
         state.updateState.isSuccess = false;
         state.updateState.isError = false;
       });
+    builder
+      .addCase(updateUserCurrencyBalance.fulfilled, (state, { payload }) => {
+        state.updateState.isLoading = false;
+        state.updateState.isSuccess = true;
+        state.updateState.isError = false;
+      })
+      .addCase(updateUserCurrencyBalance.rejected, (state, { payload }) => {
+        state.updateState.isLoading = false;
+        state.updateState.isSuccess = false;
+        state.updateState.isError = true;
+        state.errorMessage = payload;
+      })
+      .addCase(updateUserCurrencyBalance.pending, (state, { payload }) => {
+        state.updateState.isLoading = true;
+        state.updateState.isSuccess = false;
+        state.updateState.isError = false;
+      });
+    builder
+      .addCase(getTransactions.fulfilled, (state, { payload }) => {
+        state.getTransactionState.isLoading = false;
+        state.getTransactionState.isSuccess = true;
+        state.getTransactionState.isError = false;
+        state.transactions = payload;
+      })
+      .addCase(getTransactions.rejected, (state, { payload }) => {
+        state.getTransactionState.isLoading = false;
+        state.getTransactionState.isSuccess = false;
+        state.getTransactionState.isError = true;
+        state.errorMessage = payload;
+      })
+      .addCase(getTransactions.pending, (state, { payload }) => {
+        state.getTransactionState.isLoading = true;
+        state.getTransactionState.isSuccess = false;
+        state.getTransactionState.isError = false;
+      });
+    builder
+      .addCase(deleteTransaction.fulfilled, (state, { payload }) => {
+        state.transactionState.isLoading = false;
+        state.transactionState.isSuccess = true;
+        state.transactionState.isError = false;
+      })
+      .addCase(deleteTransaction.rejected, (state, { payload }) => {
+        state.transactionState.isLoading = false;
+        state.transactionState.isSuccess = false;
+        state.transactionState.isError = true;
+        state.errorMessage = payload;
+      })
+      .addCase(deleteTransaction.pending, (state, { payload }) => {
+        state.transactionState.isLoading = true;
+        state.transactionState.isSuccess = false;
+        state.transactionState.isError = false;
+      });
 
     // builder
     //   .addCase(getAdmin.fulfilled, (state, { payload }) => {
@@ -368,6 +421,7 @@ export const AppSlice = createSlice({
     //   });
   },
 });
+
 export const {
   resetAdminState,
   resetUsersState,
@@ -377,5 +431,6 @@ export const {
   reset,
   setUserManageData,
   resetSendState,
+  resetTransactionState,
 } = AppSlice.actions;
 export default AppSlice.reducer;
