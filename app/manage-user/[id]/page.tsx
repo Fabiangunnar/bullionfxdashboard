@@ -48,6 +48,7 @@ import {
   getTransactions,
   resetTransactionState,
   deleteTransaction,
+  createTransaction,
 } from "@/redux/features/AppSlice";
 import { useAppSelector, useAppDispatch } from "@/redux/hooks";
 import { useParams } from "next/navigation";
@@ -62,6 +63,7 @@ const ManageUser = (props: Props) => {
     userManageData,
     transactions,
     transactionState,
+    createTransactionState,
     updateState,
     errorMessage,
   } = useAppSelector((state) => state.AppSlice);
@@ -76,8 +78,12 @@ const ManageUser = (props: Props) => {
   const [balanceFormData, setBalanceFormData] = useState({
     balance: 0,
   });
+  const [transactionsFormData, setTransactionsFormData] = useState({
+    message: "",
+  });
   const [currencyBalanceFormData, setCurrencyBalanceFormData] = useState({
     balance: 0,
+    comment: "",
   });
   const [postsPerPage, setPostsPerPage] = useState(5);
   const [currentPage, setCurrentPage] = useState(1);
@@ -112,6 +118,10 @@ const ManageUser = (props: Props) => {
     setFormData((prev: any) => ({ ...prev, [e.target.name]: e.target.value }));
 
     setBalanceFormData((prev: any) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
+    setTransactionsFormData((prev: any) => ({
       ...prev,
       [e.target.name]: e.target.value,
     }));
@@ -178,6 +188,42 @@ const ManageUser = (props: Props) => {
 
     dispatch(resetUsersState());
   }, [updateState.isSuccess, updateState.isError, updateState.isLoading]);
+  useEffect(() => {
+    if (createTransactionState.isSuccess) {
+      toast({
+        title: "Success",
+        description: "transaction message created successfully",
+        status: "success",
+        duration: 2000,
+        isClosable: true,
+        position: "top-right",
+      });
+      setisLoading2(false);
+      dispatch(getUser(params.id));
+      dispatch(getTransactions(params.id));
+    }
+    if (createTransactionState.isError) {
+      toast({
+        title: errorMessage?.statusCode,
+        description: errorMessage?.message,
+        status: "error",
+        duration: 2000,
+        isClosable: true,
+        position: "top-right",
+      });
+      setisLoading2(false);
+    }
+
+    if (createTransactionState.isLoading) {
+      setisLoading2(true);
+    }
+
+    dispatch(resetUsersState());
+  }, [
+    createTransactionState.isSuccess,
+    createTransactionState.isError,
+    createTransactionState.isLoading,
+  ]);
 
   useEffect(() => {
     if (transactionState.isSuccess) {
@@ -270,6 +316,11 @@ const ManageUser = (props: Props) => {
   const handleUpdateBalance = async (e: any) => {
     e.preventDefault();
     await dispatch(updateUser([params.id, balanceFormData]));
+    return;
+  };
+  const handleTransactionsMessage = async (e: any) => {
+    e.preventDefault();
+    await dispatch(createTransaction([params.id, transactionsFormData]));
     return;
   };
 
@@ -420,6 +471,39 @@ const ManageUser = (props: Props) => {
           </Box>
         </div>
       </section>
+      <section className={`${styles.user_block}`}>
+        <div className={`${styles.management_block}`}>
+          <div className={`${styles.management_head}`}>
+            <MdAccountBalance />
+            <p>Set {`${userManageData.fullname}`} Transactions Message</p>
+          </div>
+          <Box p={2}>
+            <form action="" onSubmit={handleTransactionsMessage}>
+              <FormControl p={2}>
+                <FormLabel fontSize={11}>transaction message</FormLabel>
+                <Textarea
+                  fontSize={12}
+                  name="message"
+                  placeholder="transaction message"
+                  value={transactionsFormData.message}
+                  onChange={handleInputChange}
+                />
+              </FormControl>
+
+              <FormControl p={2}>
+                <Button
+                  fontSize={14}
+                  type="submit"
+                  w="100%"
+                  colorScheme="messenger"
+                >
+                  Create
+                </Button>
+              </FormControl>
+            </form>
+          </Box>
+        </div>
+      </section>
 
       <section className={`${styles.user_block}`}>
         <div className={`${styles.management_block}`}>
@@ -465,9 +549,8 @@ const ManageUser = (props: Props) => {
               <Thead>
                 <Tr>
                   {/* <Th fontSize={11}>S/N</Th> */}
-                  <Th fontSize={11}>Amount</Th>
-                  <Th fontSize={11}>Currency</Th>
                   <Th fontSize={11}>Username</Th>
+                  <Th fontSize={11}>Message</Th>
                   <Th fontSize={11}>Time</Th>
 
                   <Th fontSize={11} isNumeric>
@@ -494,11 +577,13 @@ const ManageUser = (props: Props) => {
                     return (
                       <Tr key={transaction.id}>
                         {/* <Td fontSize={11}>{index + 1}</Td> */}
-                        <Td fontSize={11}>${transaction.amount}</Td>
-
-                        <Td fontSize={11}>{transaction.currency}</Td>
                         <Td fontSize={11}>{transaction.user.username}</Td>
-
+                        <Td
+                          fontSize={11}
+                          className="flex flex-wrap w-full max-w-[10rem] whitespace-normal"
+                        >
+                          {transaction.message}
+                        </Td>
                         <Td fontSize={11}>{formattedDate}</Td>
                         <Td fontSize={11}>
                           {" "}
@@ -534,9 +619,8 @@ const ManageUser = (props: Props) => {
                   {/* <Th fontSize={11} isNumeric>
                     S/N
                   </Th> */}
-                  <Th fontSize={11}>Amount</Th>
-                  <Th fontSize={11}>Currency</Th>
                   <Th fontSize={11}>Username</Th>
+                  <Th fontSize={11}>Message</Th>
                   <Th fontSize={11}>Time</Th>
 
                   <Th fontSize={11} isNumeric>

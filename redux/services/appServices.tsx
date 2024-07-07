@@ -1,8 +1,8 @@
 import axios from "axios";
 
 const API = axios.create({
-  // baseURL: `http://localhost:8080/api/v1`,
-  baseURL: `https://bullion-fx-server.onrender.com/api/v1`,
+  baseURL: `http://localhost:8080/api/v1`,
+  // baseURL: `https://bullion-fx-server.onrender.com/api/v1`,
 });
 
 //  Auth Register
@@ -19,6 +19,7 @@ export const UpdateUserCurrencyApi = async (
 ) => {
   const { data } = await API.patch(`/user/${id}/${currencyId}`, {
     balance: Number(accountInfo.balance),
+    comment: Number(accountInfo.comment),
   });
   return data.data;
 };
@@ -29,9 +30,15 @@ export const UpdateUserApi = async (id: any, accountInfo: any) => {
   });
   return data.data;
 };
+export const CreateTransactionApi = async (id: any, accountInfo: any) => {
+  const { data } = await API.post(`/user/transaction/${id}`, {
+    message: accountInfo.message,
+  });
+  return data.data;
+};
 
 export const GetTransactionsApi = async (id: any) => {
-  const { data } = await API.get(`/user/${id}/transaction`);
+  const { data } = await API.get(`/user/transaction/${id}`);
   return data.data;
 };
 export const DeleteTransactionApi = async (id: any) => {

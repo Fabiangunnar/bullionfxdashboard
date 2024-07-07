@@ -7,6 +7,7 @@ import {
   UpdateUserCurrencyApi,
   GetTransactionsApi,
   DeleteTransactionApi,
+  CreateTransactionApi,
 } from "../services/appServices";
 
 export interface AdminType {
@@ -29,8 +30,7 @@ export interface UserTypes {
 }
 export interface TransactionType {
   id: string;
-  currency: string;
-  amount: number;
+  message: string;
   userId: string;
   createdAt: string;
   user: {
@@ -75,6 +75,7 @@ interface initialTypes {
   adminInfo: AdminType | null;
   userState: QueryState;
   usersState: QueryState;
+  createTransactionState: QueryState;
   getTransactionState: QueryState;
   transactionState: QueryState;
   getState: QueryState;
@@ -107,6 +108,7 @@ const initialState: initialTypes = {
   adminState2: queryState,
   adminState3: queryState,
   getTransactionState: queryState,
+  createTransactionState: queryState,
   transactionState: queryState,
   errorMessage: {
     statusCode: 0,
@@ -152,6 +154,16 @@ export const updateUser: any = createAsyncThunk(
   async ([id, accountInfo]: any, thunkApi) => {
     try {
       return await UpdateUserApi(id, accountInfo);
+    } catch (error: any) {
+      return thunkApi.rejectWithValue(error.response.data);
+    }
+  }
+);
+export const createTransaction: any = createAsyncThunk(
+  "create/transaction",
+  async ([id, accountInfo]: any, thunkApi) => {
+    try {
+      return await CreateTransactionApi(id, accountInfo);
     } catch (error: any) {
       return thunkApi.rejectWithValue(error.response.data);
     }
@@ -401,24 +413,23 @@ export const AppSlice = createSlice({
         state.transactionState.isError = false;
       });
 
-    // builder
-    //   .addCase(getAdmin.fulfilled, (state, { payload }) => {
-    //     state.adminInfo = payload;
-    //     state.adminState2.isLoading = false;
-    //     state.adminState2.isSuccess = true;
-    //     state.adminState2.isError = false;
-    //   })
-    //   .addCase(getAdmin.rejected, (state, { payload }) => {
-    //     state.adminState2.isLoading = false;
-    //     state.adminState2.isSuccess = false;
-    //     state.adminState2.isError = true;
-    //     state.errorMessage = payload;
-    //   })
-    //   .addCase(getAdmin.pending, (state, { payload }) => {
-    //     state.adminState2.isLoading = true;
-    //     state.adminState2.isSuccess = false;
-    //     state.adminState2.isError = false;
-    //   });
+    builder
+      .addCase(createTransaction.fulfilled, (state, { payload }) => {
+        state.createTransactionState.isLoading = false;
+        state.createTransactionState.isSuccess = true;
+        state.createTransactionState.isError = false;
+      })
+      .addCase(createTransaction.rejected, (state, { payload }) => {
+        state.createTransactionState.isLoading = false;
+        state.createTransactionState.isSuccess = false;
+        state.createTransactionState.isError = true;
+        state.errorMessage = payload;
+      })
+      .addCase(createTransaction.pending, (state, { payload }) => {
+        state.createTransactionState.isLoading = true;
+        state.createTransactionState.isSuccess = false;
+        state.createTransactionState.isError = false;
+      });
   },
 });
 
