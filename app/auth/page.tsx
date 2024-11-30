@@ -145,6 +145,7 @@ const Index = (props: Props) => {
                 type="submit"
                 w="100%"
                 colorScheme="messenger"
+                className="bg-[#236AEE]"
               >
                 Login
               </Button>

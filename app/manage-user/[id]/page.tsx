@@ -48,6 +48,7 @@ import {
   getTransactions,
   resetTransactionState,
   deleteTransaction,
+  updateTransaction,
   createTransaction,
 } from "@/redux/features/AppSlice";
 import { useAppSelector, useAppDispatch } from "@/redux/hooks";
@@ -64,15 +65,18 @@ const ManageUser = (props: Props) => {
     transactions,
     transactionState,
     createTransactionState,
+    updateTransactionState,
     updateState,
     errorMessage,
   } = useAppSelector((state) => state.AppSlice);
 
   const stateBoxRef: any = useRef();
+  const [editTransaction, setEditTransaction] = useState(false);
   const [accountBox, setAccountBox] = useState(false);
   const [formData, setFormData] = useState({
     amount: 0,
   });
+  const [transactionMessage, setTransactionMessage] = useState("");
   const [isLoading, setisLoading] = useState(false);
   const [isLoading2, setisLoading2] = useState(false);
   const [balanceFormData, setBalanceFormData] = useState({
@@ -188,6 +192,44 @@ const ManageUser = (props: Props) => {
 
     dispatch(resetUsersState());
   }, [updateState.isSuccess, updateState.isError, updateState.isLoading]);
+  useEffect(() => {
+    if (updateTransactionState.isSuccess) {
+      toast({
+        title: "Success",
+        description: "transaction message updated successfully",
+        status: "success",
+        duration: 2000,
+        isClosable: true,
+        position: "top-right",
+      });
+      setisLoading2(false);
+      setTransactionMessage("");
+      setEditTransaction(false);
+      dispatch(getUser(params.id));
+      dispatch(getTransactions(params.id));
+    }
+    if (updateTransactionState.isError) {
+      toast({
+        title: errorMessage?.statusCode,
+        description: errorMessage?.message,
+        status: "error",
+        duration: 2000,
+        isClosable: true,
+        position: "top-right",
+      });
+      setisLoading2(false);
+    }
+
+    if (updateTransactionState.isLoading) {
+      setisLoading2(true);
+    }
+
+    dispatch(resetUsersState());
+  }, [
+    updateTransactionState.isSuccess,
+    updateTransactionState.isError,
+    updateTransactionState.isLoading,
+  ]);
   useEffect(() => {
     if (createTransactionState.isSuccess) {
       toast({
@@ -427,6 +469,7 @@ const ManageUser = (props: Props) => {
                   type="submit"
                   w="100%"
                   colorScheme="messenger"
+                  className="bg-[#236AEE]"
                 >
                   Update
                 </Button>
@@ -463,6 +506,7 @@ const ManageUser = (props: Props) => {
                   type="submit"
                   w="100%"
                   colorScheme="messenger"
+                  className="bg-[#236AEE]"
                 >
                   Update
                 </Button>
@@ -495,6 +539,7 @@ const ManageUser = (props: Props) => {
                   fontSize={14}
                   type="submit"
                   w="100%"
+                  className="bg-[#236AEE]"
                   colorScheme="messenger"
                 >
                   Create
@@ -530,7 +575,12 @@ const ManageUser = (props: Props) => {
             <Box>
               <Text fontSize="sm">Referral link:</Text>
               {/* <Text fontSize={12}>been</Text> */}
-              <Button size={"sm"} fontSize={11} colorScheme="messenger">
+              <Button
+                size={"sm"}
+                fontSize={11}
+                className="bg-[#236AEE]"
+                colorScheme="messenger"
+              >
                 VIEW REFERRALS
               </Button>
             </Box>
@@ -580,9 +630,43 @@ const ManageUser = (props: Props) => {
                         <Td fontSize={11}>{transaction.user.username}</Td>
                         <Td
                           fontSize={11}
-                          className="flex flex-wrap w-full max-w-[10rem] whitespace-normal"
+                          className="flex flex-col gap-1 w-full max-w-[12rem]"
                         >
-                          {transaction.message}
+                          {editTransaction ? (
+                            <Textarea
+                              fontSize={12}
+                              name="message"
+                              defaultValue={transaction.message}
+                              onChange={(e: any) =>
+                                setTransactionMessage(e.target.value)
+                              }
+                            />
+                          ) : (
+                            <span className="flex flex-wrap w-full max-w-[10rem] whitespace-normal">
+                              {transaction.message}
+                            </span>
+                          )}
+
+                          <Button
+                            fontSize={11}
+                            maxW={24}
+                            size={"sm"}
+                            w="100%"
+                            type="button"
+                            onClick={() => {
+                              editTransaction
+                                ? dispatch(
+                                    updateTransaction([
+                                      transaction.id,
+                                      transactionMessage,
+                                    ])
+                                  )
+                                : setEditTransaction(true);
+                            }}
+                            colorScheme={editTransaction ? "teal" : "blue"}
+                          >
+                            {editTransaction ? "Update" : "Edit"}
+                          </Button>
                         </Td>
                         <Td fontSize={11}>{formattedDate}</Td>
                         <Td fontSize={11}>

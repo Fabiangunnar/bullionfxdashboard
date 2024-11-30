@@ -108,6 +108,7 @@ export default function Home() {
                               maxW={16}
                               size={"sm"}
                               colorScheme="messenger"
+                              className="bg-[#236AEE]"
                               onClick={() =>
                                 router.push(`/manage-user/${user.id}`)
                               }

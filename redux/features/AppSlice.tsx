@@ -8,6 +8,7 @@ import {
   GetTransactionsApi,
   DeleteTransactionApi,
   CreateTransactionApi,
+  UpdateTransactionApi,
 } from "../services/appServices";
 
 export interface AdminType {
@@ -76,6 +77,7 @@ interface initialTypes {
   userState: QueryState;
   usersState: QueryState;
   createTransactionState: QueryState;
+  updateTransactionState: QueryState;
   getTransactionState: QueryState;
   transactionState: QueryState;
   getState: QueryState;
@@ -109,6 +111,7 @@ const initialState: initialTypes = {
   adminState3: queryState,
   getTransactionState: queryState,
   createTransactionState: queryState,
+  updateTransactionState: queryState,
   transactionState: queryState,
   errorMessage: {
     statusCode: 0,
@@ -164,6 +167,16 @@ export const createTransaction: any = createAsyncThunk(
   async ([id, accountInfo]: any, thunkApi) => {
     try {
       return await CreateTransactionApi(id, accountInfo);
+    } catch (error: any) {
+      return thunkApi.rejectWithValue(error.response.data);
+    }
+  }
+);
+export const updateTransaction: any = createAsyncThunk(
+  "update/transaction",
+  async ([id, accountInfo]: any, thunkApi) => {
+    try {
+      return await UpdateTransactionApi(id, accountInfo);
     } catch (error: any) {
       return thunkApi.rejectWithValue(error.response.data);
     }
@@ -429,6 +442,23 @@ export const AppSlice = createSlice({
         state.createTransactionState.isLoading = true;
         state.createTransactionState.isSuccess = false;
         state.createTransactionState.isError = false;
+      });
+    builder
+      .addCase(updateTransaction.fulfilled, (state, { payload }) => {
+        state.updateTransactionState.isLoading = false;
+        state.updateTransactionState.isSuccess = true;
+        state.updateTransactionState.isError = false;
+      })
+      .addCase(updateTransaction.rejected, (state, { payload }) => {
+        state.updateTransactionState.isLoading = false;
+        state.updateTransactionState.isSuccess = false;
+        state.updateTransactionState.isError = true;
+        state.errorMessage = payload;
+      })
+      .addCase(updateTransaction.pending, (state, { payload }) => {
+        state.updateTransactionState.isLoading = true;
+        state.updateTransactionState.isSuccess = false;
+        state.updateTransactionState.isError = false;
       });
   },
 });
