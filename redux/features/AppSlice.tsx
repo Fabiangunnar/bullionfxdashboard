@@ -31,7 +31,11 @@ export interface UserTypes {
 }
 export interface TransactionType {
   id: string;
-  message: string;
+  from: string;
+  to: string;
+  currency: string;
+  amount: string;
+  type: string;
   userId: string;
   createdAt: string;
   user: {

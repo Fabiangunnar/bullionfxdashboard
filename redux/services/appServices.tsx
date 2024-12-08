@@ -32,13 +32,13 @@ export const UpdateUserApi = async (id: any, accountInfo: any) => {
 };
 export const UpdateTransactionApi = async (id: any, accountInfo: any) => {
   const { data } = await API.put(`/user/transaction/${id}`, {
-    message: accountInfo.message,
+    ...accountInfo,
   });
   return data.data;
 };
 export const CreateTransactionApi = async (id: any, accountInfo: any) => {
   const { data } = await API.post(`/user/transaction/${id}`, {
-    message: accountInfo.message,
+    ...accountInfo,
   });
   return data.data;
 };

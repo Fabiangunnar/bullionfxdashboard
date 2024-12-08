@@ -76,14 +76,24 @@ const ManageUser = (props: Props) => {
   const [formData, setFormData] = useState({
     amount: 0,
   });
-  const [transactionMessage, setTransactionMessage] = useState("");
   const [isLoading, setisLoading] = useState(false);
   const [isLoading2, setisLoading2] = useState(false);
   const [balanceFormData, setBalanceFormData] = useState({
     balance: 0,
   });
+  const [transactionsEditFormData, setTransactionsEditFormData] = useState({
+    from: "",
+    to: "",
+    type: "BTC",
+    currency: "",
+    amount: "",
+  });
   const [transactionsFormData, setTransactionsFormData] = useState({
-    message: "",
+    from: "",
+    to: "",
+    type: "BTC",
+    currency: "",
+    amount: "",
   });
   const [currencyBalanceFormData, setCurrencyBalanceFormData] = useState({
     balance: 0,
@@ -99,6 +109,7 @@ const ManageUser = (props: Props) => {
   );
 
   const [currencyState, setCurrencyState] = useState("");
+  const [typeState, setTypeState] = useState("");
 
   const { toast } = createStandaloneToast();
   const dispatch = useAppDispatch();
@@ -135,10 +146,18 @@ const ManageUser = (props: Props) => {
       ...prev,
       [e.target.name]: e.target.value,
     }));
+    setTransactionsEditFormData((prev: any) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
   };
   const handleCurrencyStateChange = (e: any) => {
     if (e.target.value === "") return;
     setCurrencyState(e.target.value);
+  };
+  const handleTypeState = (e: any) => {
+    if (e.target.value === "") return;
+    setTypeState(e.target.value);
   };
 
   const handleClickOutside = (event: any) => {
@@ -203,7 +222,7 @@ const ManageUser = (props: Props) => {
         position: "top-right",
       });
       setisLoading2(false);
-      setTransactionMessage("");
+
       setEditTransaction(false);
       dispatch(getUser(params.id));
       dispatch(getTransactions(params.id));
@@ -519,21 +538,86 @@ const ManageUser = (props: Props) => {
         <div className={`${styles.management_block}`}>
           <div className={`${styles.management_head}`}>
             <MdAccountBalance />
-            <p>Set {`${userManageData.fullname}`} Transactions Message</p>
+            <p>Set {`${userManageData.fullname}`} Transactions Data</p>
           </div>
           <Box p={2}>
             <form action="" onSubmit={handleTransactionsMessage}>
               <FormControl p={2}>
-                <FormLabel fontSize={11}>transaction message</FormLabel>
-                <Textarea
+                <FormLabel fontSize={11}>Source Account</FormLabel>
+                <Input
                   fontSize={12}
-                  name="message"
-                  placeholder="transaction message"
-                  value={transactionsFormData.message}
+                  name="from"
+                  placeholder="Source Account"
+                  value={transactionsFormData.from}
                   onChange={handleInputChange}
                 />
               </FormControl>
-
+              <FormControl p={2}>
+                <FormLabel fontSize={11}>Destination Account</FormLabel>
+                <Input
+                  fontSize={12}
+                  name="to"
+                  placeholder="destination account"
+                  value={transactionsFormData.to}
+                  onChange={handleInputChange}
+                />
+              </FormControl>
+              <FormControl p={2}>
+                <FormLabel fontSize={11}>Amount</FormLabel>
+                <Input
+                  fontSize={12}
+                  name="amount"
+                  placeholder="transaction amount"
+                  value={transactionsFormData.amount}
+                  onChange={handleInputChange}
+                />
+              </FormControl>
+              <FormControl p={2}>
+                <FormLabel fontSize={11}>Currency</FormLabel>
+                <Select
+                  cursor={"pointer"}
+                  fontSize={11}
+                  onClick={(e: any) => {
+                    if (e.target.value === "") return;
+                    setTransactionsFormData((pre) => ({
+                      ...pre,
+                      currency: e.target.value,
+                    }));
+                  }}
+                  px={0}
+                  placeholder={"select currency"}
+                  size="sm"
+                >
+                  {currencies.map((currency) => (
+                    <option key={currency} value={currency}>
+                      {currency.toUpperCase()}
+                    </option>
+                  ))}
+                </Select>
+              </FormControl>{" "}
+              <FormControl p={2}>
+                <FormLabel fontSize={11}>Transaction Type</FormLabel>
+                <Select
+                  cursor={"pointer"}
+                  fontSize={11}
+                  onClick={(e: any) => {
+                    if (e.target.value === "") return;
+                    setTransactionsFormData((pre) => ({
+                      ...pre,
+                      type: e.target.value,
+                    }));
+                  }}
+                  px={0}
+                  placeholder={"Transaction Type"}
+                  size="sm"
+                >
+                  {["buy", "sell"].map((currency) => (
+                    <option key={currency} value={currency}>
+                      {currency.toUpperCase()}
+                    </option>
+                  ))}
+                </Select>
+              </FormControl>
               <FormControl p={2}>
                 <Button
                   fontSize={14}
@@ -600,7 +684,11 @@ const ManageUser = (props: Props) => {
                 <Tr>
                   {/* <Th fontSize={11}>S/N</Th> */}
                   <Th fontSize={11}>Username</Th>
-                  <Th fontSize={11}>Message</Th>
+                  <Th fontSize={11}>From</Th>
+                  <Th fontSize={11}>To</Th>
+                  <Th fontSize={11}>Amount</Th>
+                  <Th fontSize={11}>Currency</Th>
+                  <Th fontSize={11}>Type</Th>
                   <Th fontSize={11}>Time</Th>
 
                   <Th fontSize={11} isNumeric>
@@ -635,49 +723,143 @@ const ManageUser = (props: Props) => {
                           {editTransaction ? (
                             <Textarea
                               fontSize={12}
-                              name="message"
-                              defaultValue={transaction.message}
-                              onChange={(e: any) =>
-                                setTransactionMessage(e.target.value)
-                              }
+                              name="from"
+                              defaultValue={transaction.from}
+                              onChange={handleInputChange2}
                             />
                           ) : (
                             <span className="flex flex-wrap w-full max-w-[10rem] whitespace-normal">
-                              {transaction.message}
+                              {transaction.from}
                             </span>
                           )}
-
-                          <Button
-                            fontSize={11}
-                            maxW={24}
-                            size={"sm"}
-                            w="100%"
-                            type="button"
-                            onClick={() => {
-                              editTransaction
-                                ? dispatch(
-                                    updateTransaction([
-                                      transaction.id,
-                                      transactionMessage,
-                                    ])
-                                  )
-                                : setEditTransaction(true);
-                            }}
-                            colorScheme={editTransaction ? "teal" : "blue"}
-                          >
-                            {editTransaction ? "Update" : "Edit"}
-                          </Button>
+                          \dgfd
+                        </Td>
+                        <Td
+                          fontSize={11}
+                          className="flex flex-col gap-1 w-full max-w-[12rem]"
+                        >
+                          {editTransaction ? (
+                            <Textarea
+                              fontSize={12}
+                              name="to"
+                              defaultValue={transaction.to}
+                              onChange={handleInputChange2}
+                            />
+                          ) : (
+                            <span className="flex flex-wrap w-full max-w-[10rem] whitespace-normal">
+                              {transaction.to}
+                            </span>
+                          )}
+                        </Td>
+                        <Td
+                          fontSize={11}
+                          className="flex flex-col gap-1 w-full max-w-[12rem]"
+                        >
+                          {editTransaction ? (
+                            <Textarea
+                              fontSize={12}
+                              name="amount"
+                              defaultValue={transaction.amount}
+                              onChange={handleInputChange2}
+                            />
+                          ) : (
+                            <span className="flex flex-wrap w-full max-w-[10rem] whitespace-normal">
+                              {transaction.amount}
+                            </span>
+                          )}
+                        </Td>
+                        <Td
+                          fontSize={11}
+                          className="flex flex-col gap-1 w-full max-w-[12rem]"
+                        >
+                          {editTransaction ? (
+                            <Select
+                              cursor={"pointer"}
+                              fontSize={11}
+                              onClick={(e: any) => {
+                                if (e.target.value === "") return;
+                                setTransactionsEditFormData((pre) => ({
+                                  ...pre,
+                                  currency: e.target.value,
+                                }));
+                              }}
+                              px={0}
+                              placeholder={"select currency"}
+                              size="sm"
+                            >
+                              {currencies.map((currency) => (
+                                <option key={currency} value={currency}>
+                                  {currency.toUpperCase()}
+                                </option>
+                              ))}
+                            </Select>
+                          ) : (
+                            <span className="flex flex-wrap w-full max-w-[10rem] whitespace-normal">
+                              {transaction.currency}
+                            </span>
+                          )}
+                        </Td>
+                        <Td
+                          fontSize={11}
+                          className="flex flex-col gap-1 w-full max-w-[12rem]"
+                        >
+                          {editTransaction ? (
+                            <Select
+                              cursor={"pointer"}
+                              fontSize={11}
+                              onClick={(e: any) => {
+                                if (e.target.value === "") return;
+                                setTransactionsEditFormData((pre) => ({
+                                  ...pre,
+                                  type: e.target.value,
+                                }));
+                              }}
+                              px={0}
+                              placeholder={"Transaction Type"}
+                              size="sm"
+                            >
+                              {["buy", "sell"].map((currency) => (
+                                <option key={currency} value={currency}>
+                                  {currency.toUpperCase()}
+                                </option>
+                              ))}
+                            </Select>
+                          ) : (
+                            <span className="flex flex-wrap w-full max-w-[10rem] whitespace-normal">
+                              {transaction.currency}
+                            </span>
+                          )}
                         </Td>
                         <Td fontSize={11}>{formattedDate}</Td>
                         <Td fontSize={11}>
                           {" "}
                           <Flex
-                            direction={"row"}
+                            direction={"column"}
                             gap={1}
                             justify={"end"}
                             align={"center"}
                             minW={"6rem"}
                           >
+                            <Button
+                              fontSize={11}
+                              maxW={24}
+                              size={"sm"}
+                              w="100%"
+                              type="button"
+                              onClick={() => {
+                                editTransaction
+                                  ? dispatch(
+                                      updateTransaction([
+                                        transaction.id,
+                                        transactionsEditFormData,
+                                      ])
+                                    )
+                                  : setEditTransaction(true);
+                              }}
+                              colorScheme={editTransaction ? "teal" : "blue"}
+                            >
+                              {editTransaction ? "Update" : "Edit"}
+                            </Button>
                             <Button
                               fontSize={11}
                               maxW={24}
@@ -704,7 +886,11 @@ const ManageUser = (props: Props) => {
                     S/N
                   </Th> */}
                   <Th fontSize={11}>Username</Th>
-                  <Th fontSize={11}>Message</Th>
+                  <Th fontSize={11}>From</Th>
+                  <Th fontSize={11}>To</Th>
+                  <Th fontSize={11}>Amount</Th>
+                  <Th fontSize={11}>Currency</Th>
+                  <Th fontSize={11}>Type</Th>
                   <Th fontSize={11}>Time</Th>
 
                   <Th fontSize={11} isNumeric>
