@@ -732,7 +732,6 @@ const ManageUser = (props: Props) => {
                               {transaction.from}
                             </span>
                           )}
-                          \dgfd
                         </Td>
                         <Td
                           fontSize={11}
@@ -831,8 +830,7 @@ const ManageUser = (props: Props) => {
                           )}
                         </Td>
                         <Td fontSize={11}>{formattedDate}</Td>
-                        <Td fontSize={11}>
-                          {" "}
+                        <Td fontSize={11} isNumeric>
                           <Flex
                             direction={"column"}
                             gap={1}
