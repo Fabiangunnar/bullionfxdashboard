@@ -81,13 +81,9 @@ const ManageUser = (props: Props) => {
   const [balanceFormData, setBalanceFormData] = useState({
     balance: 0,
   });
-  const [transactionsEditFormData, setTransactionsEditFormData] = useState({
-    from: "",
-    to: "",
-    type: "BTC",
-    currency: "",
-    amount: "",
-  });
+  const [transactionsEditFormData, setTransactionsEditFormData] = useState<{
+    [key: string]: any;
+  }>({});
   const [transactionsFormData, setTransactionsFormData] = useState({
     from: "",
     to: "",
@@ -141,14 +137,17 @@ const ManageUser = (props: Props) => {
       [e.target.name]: e.target.value,
     }));
   };
-  const handleInputChange2 = (e: any) => {
+  const handleInputChange2 = (e: any, id: any) => {
     setCurrencyBalanceFormData((prev: any) => ({
       ...prev,
       [e.target.name]: e.target.value,
     }));
     setTransactionsEditFormData((prev: any) => ({
       ...prev,
-      [e.target.name]: e.target.value,
+      [id]: {
+        ...prev[id],
+        [e.target.name]: e.target.value,
+      },
     }));
   };
   const handleCurrencyStateChange = (e: any) => {
@@ -384,6 +383,10 @@ const ManageUser = (props: Props) => {
     await dispatch(createTransaction([params.id, transactionsFormData]));
     return;
   };
+
+  const [editTransactionId, setEditTransactionId] = useState<string | null>(
+    null
+  );
 
   return (
     <div className={`${styles.manage_user_block}`}>
@@ -716,12 +719,14 @@ const ManageUser = (props: Props) => {
                       <Tr key={transaction.id}>
                         <Td fontSize={11}>{transaction.user.username}</Td>
                         <Td fontSize={11}>
-                          {editTransaction ? (
+                          {editTransactionId === transaction.id ? (
                             <Textarea
                               fontSize={12}
                               name="from"
                               defaultValue={transaction.from}
-                              onChange={handleInputChange2}
+                              onChange={(e: any) =>
+                                handleInputChange2(e, transaction.id)
+                              }
                             />
                           ) : (
                             <span className="flex flex-wrap w-full max-w-[10rem] whitespace-normal">
@@ -730,12 +735,14 @@ const ManageUser = (props: Props) => {
                           )}
                         </Td>
                         <Td fontSize={11}>
-                          {editTransaction ? (
+                          {editTransactionId === transaction.id ? (
                             <Textarea
                               fontSize={12}
                               name="to"
                               defaultValue={transaction.to}
-                              onChange={handleInputChange2}
+                              onChange={(e: any) =>
+                                handleInputChange2(e, transaction.id)
+                              }
                             />
                           ) : (
                             <span className="flex flex-wrap w-full max-w-[10rem] whitespace-normal">
@@ -744,12 +751,14 @@ const ManageUser = (props: Props) => {
                           )}
                         </Td>
                         <Td fontSize={11}>
-                          {editTransaction ? (
+                          {editTransactionId === transaction.id ? (
                             <Textarea
                               fontSize={12}
                               name="amount"
                               defaultValue={transaction.amount}
-                              onChange={handleInputChange2}
+                              onChange={(e: any) =>
+                                handleInputChange2(e, transaction.id)
+                              }
                             />
                           ) : (
                             <span className="flex flex-wrap w-full max-w-[10rem] whitespace-normal">
@@ -758,17 +767,15 @@ const ManageUser = (props: Props) => {
                           )}
                         </Td>
                         <Td fontSize={11}>
-                          {editTransaction ? (
+                          {editTransactionId === transaction.id ? (
                             <Select
                               cursor={"pointer"}
                               fontSize={11}
-                              onClick={(e: any) => {
-                                if (e.target.value === "") return;
-                                setTransactionsEditFormData((pre) => ({
-                                  ...pre,
-                                  currency: e.target.value,
-                                }));
-                              }}
+                              defaultValue={transaction.currency}
+                              onChange={(e: any) =>
+                                handleInputChange2(e, transaction.id)
+                              }
+                              name="currency"
                               px={0}
                               placeholder={"select currency"}
                               size="sm"
@@ -786,24 +793,22 @@ const ManageUser = (props: Props) => {
                           )}
                         </Td>
                         <Td fontSize={11}>
-                          {editTransaction ? (
+                          {editTransactionId === transaction.id ? (
                             <Select
                               cursor={"pointer"}
                               fontSize={11}
-                              onClick={(e: any) => {
-                                if (e.target.value === "") return;
-                                setTransactionsEditFormData((pre) => ({
-                                  ...pre,
-                                  type: e.target.value,
-                                }));
-                              }}
+                              defaultValue={transaction.type}
+                              onChange={(e: any) =>
+                                handleInputChange2(e, transaction.id)
+                              }
+                              name="type"
                               px={0}
                               placeholder={"Transaction Type"}
                               size="sm"
                             >
-                              {["buy", "sell"].map((currency) => (
-                                <option key={currency} value={currency}>
-                                  {currency.toUpperCase()}
+                              {["buy", "sell"].map((type) => (
+                                <option key={type} value={type}>
+                                  {type.toUpperCase()}
                                 </option>
                               ))}
                             </Select>
@@ -829,18 +834,37 @@ const ManageUser = (props: Props) => {
                               w="100%"
                               type="button"
                               onClick={() => {
-                                editTransaction
-                                  ? dispatch(
-                                      updateTransaction([
-                                        transaction.id,
-                                        transactionsEditFormData,
-                                      ])
-                                    )
-                                  : setEditTransaction(true);
+                                if (editTransactionId === transaction.id) {
+                                  dispatch(
+                                    updateTransaction([
+                                      transaction.id,
+                                      transactionsEditFormData[transaction.id],
+                                    ])
+                                  );
+                                  setEditTransactionId(null);
+                                } else {
+                                  setEditTransactionId(transaction.id);
+                                  setTransactionsEditFormData((prev: any) => ({
+                                    ...prev,
+                                    [transaction.id]: {
+                                      from: transaction.from,
+                                      to: transaction.to,
+                                      amount: transaction.amount,
+                                      currency: transaction.currency,
+                                      type: transaction.type,
+                                    },
+                                  }));
+                                }
                               }}
-                              colorScheme={editTransaction ? "teal" : "blue"}
+                              colorScheme={
+                                editTransactionId === transaction.id
+                                  ? "teal"
+                                  : "blue"
+                              }
                             >
-                              {editTransaction ? "Update" : "Edit"}
+                              {editTransactionId === transaction.id
+                                ? "Update"
+                                : "Edit"}
                             </Button>
                             <Button
                               fontSize={11}
