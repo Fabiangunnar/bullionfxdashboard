@@ -714,12 +714,8 @@ const ManageUser = (props: Props) => {
                     )}`;
                     return (
                       <Tr key={transaction.id}>
-                        {/* <Td fontSize={11}>{index + 1}</Td> */}
                         <Td fontSize={11}>{transaction.user.username}</Td>
-                        <Td
-                          fontSize={11}
-                          className="flex flex-col gap-1 w-full max-w-[12rem]"
-                        >
+                        <Td fontSize={11}>
                           {editTransaction ? (
                             <Textarea
                               fontSize={12}
@@ -733,10 +729,7 @@ const ManageUser = (props: Props) => {
                             </span>
                           )}
                         </Td>
-                        <Td
-                          fontSize={11}
-                          className="flex flex-col gap-1 w-full max-w-[12rem]"
-                        >
+                        <Td fontSize={11}>
                           {editTransaction ? (
                             <Textarea
                               fontSize={12}
@@ -750,10 +743,7 @@ const ManageUser = (props: Props) => {
                             </span>
                           )}
                         </Td>
-                        <Td
-                          fontSize={11}
-                          className="flex flex-col gap-1 w-full max-w-[12rem]"
-                        >
+                        <Td fontSize={11}>
                           {editTransaction ? (
                             <Textarea
                               fontSize={12}
@@ -767,10 +757,7 @@ const ManageUser = (props: Props) => {
                             </span>
                           )}
                         </Td>
-                        <Td
-                          fontSize={11}
-                          className="flex flex-col gap-1 w-full max-w-[12rem]"
-                        >
+                        <Td fontSize={11}>
                           {editTransaction ? (
                             <Select
                               cursor={"pointer"}
@@ -798,10 +785,7 @@ const ManageUser = (props: Props) => {
                             </span>
                           )}
                         </Td>
-                        <Td
-                          fontSize={11}
-                          className="flex flex-col gap-1 w-full max-w-[12rem]"
-                        >
+                        <Td fontSize={11}>
                           {editTransaction ? (
                             <Select
                               cursor={"pointer"}
@@ -825,7 +809,7 @@ const ManageUser = (props: Props) => {
                             </Select>
                           ) : (
                             <span className="flex flex-wrap w-full max-w-[10rem] whitespace-normal">
-                              {transaction.currency}
+                              {transaction.type}
                             </span>
                           )}
                         </Td>

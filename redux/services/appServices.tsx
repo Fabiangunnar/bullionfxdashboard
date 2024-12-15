@@ -1,8 +1,8 @@
 import axios from "axios";
 
 const API = axios.create({
-  // baseURL: `http://localhost:8080/api/v1`,
-  baseURL: `https://bullion-fx-server.onrender.com/api/v1`,
+  baseURL: `http://localhost:8080/api/v1`,
+  // baseURL: `https://bullion-fx-server.onrender.com/api/v1`,
 });
 
 //  Auth Register
